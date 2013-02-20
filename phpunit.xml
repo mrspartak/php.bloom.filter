@@ -1,7 +1,7 @@
 <phpunit>
   <testsuites>
-    <testsuite name="Bloom_Objec">
-      <file>tests/Test.php</file>
+    <testsuite name="Test">
+      <directory>tests</directory>
     </testsuite>
   </testsuites>
 </phpunit>
