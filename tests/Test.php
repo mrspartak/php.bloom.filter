@@ -138,4 +138,80 @@ class Test extends PHPUnit_Framework_TestCase
 		$set = explode(',', $bloom->set);
 		$this->assertEquals( 0, array_sum($set) );
 	}
+	
+	public function testEmptyCacheTest()
+	{
+		if(is_file('counter')) unlink('counter');
+		if(is_file('default')) unlink('default');
+		
+		$params = array(
+			'counter' => true
+		);
+		$bloom_counter = new Bloom(array('counter'=>true,'entries_max'=>10));
+		$bloom_default = new Bloom(array('entries_max'=>10));
+		for( $i=0; $i < 10; $i++ ) {
+			$vars[] = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 5);
+		}
+		$bloom = array(
+			'counter' => $bloom_counter,
+			'default' => $bloom_default
+		);
+		
+		file_put_contents('counter', serialize( $bloom['counter'] ));
+		file_put_contents('default', serialize( $bloom['default'] ));
+		
+		$bloom_counter->set($vars);
+		$bloom_default->set($vars);
+		$set_counter = $bloom_counter->set;
+		$set_default = $bloom_default->set;
+		
+		$bloom_counter = null;
+		$bloom_default = null;
+		
+		$bloom_counter = unserialize( file_get_contents('counter') );
+		$bloom_default = unserialize( file_get_contents('default') );
+		$bloom_counter->set($vars);
+		$bloom_default->set($vars);
+		
+		$this->assertEquals($set_counter, $bloom_counter->set);
+		$this->assertEquals($set_default, $bloom_default->set);
+	}
+	
+	public function testFilledCacheTest()
+	{
+		if(is_file('counter')) unlink('counter');
+		if(is_file('default')) unlink('default');
+		
+		$params = array(
+			'counter' => true
+		);
+		$bloom_counter = new Bloom(array('counter'=>true,'entries_max'=>10));
+		$bloom_default = new Bloom(array('entries_max'=>10));
+		for( $i=0; $i < 10; $i++ ) {
+			$vars[] = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 5);
+			$res[] = true;
+		}
+		
+		$bloom_counter->set($vars);
+		$bloom_default->set($vars);
+		
+		$bloom = array(
+			'counter' => $bloom_counter,
+			'default' => $bloom_default
+		);
+		file_put_contents('counter', serialize( $bloom['counter'] ));
+		file_put_contents('default', serialize( $bloom['default'] ));
+		
+		$set_counter = $bloom_counter->set;
+		$set_default = $bloom_default->set;
+		
+		$bloom_counter = null;
+		$bloom_default = null;
+		
+		$bloom_counter = unserialize( file_get_contents('counter') );
+		$bloom_default = unserialize( file_get_contents('default') );
+		
+		$this->assertEquals( $res, $bloom_counter->has($vars) );
+		$this->assertEquals( $res, $bloom_default->has($vars) );
+	}
 }

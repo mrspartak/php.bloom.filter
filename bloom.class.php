@@ -154,12 +154,8 @@ class Bloom
 		/**
 		*	Initiation set
 		*/
-		if($this->counter === false)
-			for($i = 0; $i < $this->set_size; $i++)
-				$this->set .= '0';
-		else
-			for($i = 0; $i < $this->set_size; $i++)
-				$this->set .= '0,';
+		$piece = ($this->counter) ? ',0' : '0';
+		$this->set = str_repeat($piece, $this->set_size);
 		
 		return $this;
 	}
@@ -171,8 +167,9 @@ class Bloom
 	*/	
 	public function __sleep() {
 		foreach($this as $key => $attr)
-			if( $this->counter === true || ($key != 'set' && $this->entries_count == 0) )
-				$result[] = $key;	
+			$result[] = $key;	
+		if($this->entries_count == 0)
+			unset($result['set']);
 		return $result;
 	}
 	
@@ -182,9 +179,9 @@ class Bloom
 	* @return object unserialized object
 	*/	
 	public function __wakeup() {
-		if($this->counter === false && $this->entries_count == 0)
-			for($i = 0; $i < $this->set_size; $i++)
-				$this->set .= '0';
+		$piece = ($this->counter) ? ',0' : '0';
+		if($this->entries_count == 0)
+			$this->set = str_repeat($piece, $this->set_size);
 	}
 	
 	/**
