@@ -2,18 +2,18 @@
 /**
 * Bloom filter php
 * 
-* This is bloom's filter phph implementation
+* This is Bloom's filter php implementation
 * 
 * @author Spartak Kagramanayan <mr.spartak@rambler.ru>
-* @version 0.5
+* @version 0.6
 */
 
 /**
 * Main BloomClass
 * Use cases:
 * -to cooldown HDD usage
-* -to speedup checking of object excistance
-* -to save memory (only without counter)
+* -to speedup checking of object excistance (with counter it still problem)
+* -to save memory
 *
 * When to use:
 * -Get/Set operations are more than 0.001
@@ -149,13 +149,17 @@ class Bloom
 		*	Setting up HashObjects to hashes property
 		*/
 		for($i = 0; $i < $this->hash_count; $i++)
-			$this->hashes[] = new Hash($params['hash']);
+			$this->hashes[] = new Hash($params['hash'], $this->hashes);
 		
 		/**
 		*	Initiation set
 		*/
-		for($i = 0; $i < $this->set_size; $i++)
-			$this->set .= '0';
+		if($this->counter === false)
+			for($i = 0; $i < $this->set_size; $i++)
+				$this->set .= '0';
+		else
+			for($i = 0; $i < $this->set_size; $i++)
+				$this->set .= '0,';
 		
 		return $this;
 	}
@@ -166,8 +170,8 @@ class Bloom
 	* @return object for serializing
 	*/	
 	public function __sleep() {
-		foreach( $this as $key => $attr )
-			if($key != 'set' && $this->entries_count == 0)
+		foreach($this as $key => $attr)
+			if( $this->counter === true || ($key != 'set' && $this->entries_count == 0) )
 				$result[] = $key;	
 		return $result;
 	}
@@ -178,7 +182,7 @@ class Bloom
 	* @return object unserialized object
 	*/	
 	public function __wakeup() {
-		if($this->entries_count == 0)
+		if($this->counter === false && $this->entries_count == 0)
 			for($i = 0; $i < $this->set_size; $i++)
 				$this->set .= '0';
 	}
@@ -189,22 +193,121 @@ class Bloom
 	* @param mixed
 	* @return BloomObject
 	*/	
-	public function set( $mixed ) {
+	public function set($mixed) {
 		/**
 		*	In case of array given, no matter how depp it is, 
 		* method calls itself recursively with each array element
 		*/
-		if( is_array( $mixed ) )
-			foreach( $mixed as $arg )
-				$this->set( $arg );
+		if( is_array($mixed) )
+			foreach($mixed as $arg)
+				$this->set($arg);
 		/**
 		*	Otherwise method set mark into set property by using every HashObject
 		*/		
 		else
-			for( $i=0; $i < $this->hash_count; $i++ )
-				$this->set[ $this->hashes[$i]->crc( $mixed, $this->set_size ) ] = 1;	
+			for($i=0; $i < $this->hash_count; $i++) {
+				if($this->counter === false)
+					$this->set[ $this->hashes[$i]->crc($mixed, $this->set_size) ] = 1;
+				else
+					$this->counter( $this->hashes[$i]->crc($mixed, $this->set_size), 1 );
+				
+				$this->entries_count++;
+			}
 		
 		return $this;
+	}
+	
+	/**
+	* Unset value from Bloom filter
+	*
+	* @param mixed
+	* @return BloomObject
+	*/	
+	public function delete($mixed) {
+		if($this->counter === false)
+			return false;
+		/**
+		*	In case of array given, no matter how depp it is, 
+		* method calls itself recursively with each array element
+		*/
+		if( is_array($mixed) ) {
+			foreach($mixed as $key => $arg)
+				$result[$key] = $this->delete($arg);
+			
+			return $result;
+		}
+		/**
+		*	Otherwise method decrements mark if element exists
+		*/		
+		else
+			if($this->has($mixed)) {
+				for($i=0; $i < $this->hash_count; $i++) {
+						$this->counter( $this->hashes[$i]->crc($mixed, $this->set_size), -1 );
+					
+					$this->entries_count--;
+				}
+				return true;
+			}
+			else
+				return false;
+	}
+	
+	/**
+	* Works with special string in counter mode
+	*
+	* @param int position
+	* @param int number to add
+	* @param boolean return value or setup set
+	* @return mixed
+	*/	
+	public function counter($position, $add, $get = false) {
+		/**
+		*	Starter minimal position
+		*/
+		$left = $position*2;
+		
+		/**
+		*	Check if we already on position
+		*/
+		if( @substr_count($this->set, ',', 0, $left) != $num )
+			/**
+			*	Cicle before we will be on needed position
+			*/
+			do {
+				/**
+				*	Go to the next delimeter
+				*/
+				$left = strpos($this->set, ',', $left+1);
+			} while ( @substr_count($this->set, ',', 0, $left) < $num );
+		else
+			/**
+			*	Position of delimeter left from number
+			*/
+			$left = strrpos($this->set, ',', $left - strlen($this->set) + 1);
+		
+		/**
+		*	Return number
+		*/
+		if($get === true)
+			return  intval(substr($this->set, $left+1));
+		else {
+			/**
+			* Get position of right delimeter
+			*/
+			$right = strpos($this->set, ',', $left+1);
+			$right = ($right === false) ? strlen($this->set) : $right;
+			
+			/**
+			*	Get number and manipulate it
+			*/
+			$slave = intval( substr($this->set, $left+1) ) + $add;
+			$slave = ($slave < 0) ? 0 : $slave;
+		}
+		
+		/**
+		*	Setup set with new object
+		*/
+		$this->set = substr($this->set, 0, $left+1) . $slave . substr($this->set, $right);
 	}
 	
 	/**
@@ -214,31 +317,33 @@ class Bloom
 	* @param boolean
 	* @return mixed (array) or (boolean) or (float)
 	*/
-	public function has( $mixed, $boolean = true ) {
+	public function has($mixed, $boolean = true) {
 		/**
 		*	In case of array given will be returned array,
 		* and method call's itself recursively with ararray's alements
 		*/	
-		if( is_array( $mixed ) ) {
-			foreach( $mixed as $key => $arg )
-				$result[$key] = $this->has( $arg, $boolean );
+		if( is_array($mixed) ) {
+			foreach($mixed as $key => $arg)
+				$result[$key] = $this->has($arg, $boolean);
 				
 			return $result;	
 		}	else {
-			for( $i=0; $i < $this->hash_count; $i++ ) {
-				$value = $this->set[ $this->hashes[$i]->crc( $mixed, $this->set_size ) ];
-				
+			for($i=0; $i < $this->hash_count; $i++) {
+				if($this->counter === false)
+					$value = $this->set[ $this->hashes[$i]->crc($mixed, $this->set_size) ];
+				else
+					$value = $this->counter($this->hashes[$i]->crc($mixed, $this->set_size), 0, true);
 				/**
 				*	$boolean parameter allows to choose what to return
 				* boolean or the procent of entries pass
 				*/
-				if( $boolean && !$value )
+				if($boolean && !$value)
 					return false;
-				elseif( $boolean === false )
+				elseif($boolean === false)
 					$c += ($value) ? 1 : 0;	
 			}
 			
-			return ( $boolean === true ) ? true : $c/$this->hash_count;
+			return ($boolean === true) ? true : $c/$this->hash_count;
 		}
 	}
 }
@@ -269,8 +374,8 @@ class Map {
 	* @return array merged result parameters
 	*/
 	static public function apply($map, $initial, $setup) {
-		self::circl( $map, $setup );	
-		return array_merge( $initial, (array) $setup );	
+		self::circl($map, $setup);	
+		return array_merge($initial, (array) $setup);	
 	}
 	
 	/**
@@ -279,17 +384,17 @@ class Map {
 	* @param array map
 	* @param array given parameters
 	*/
-	static private function circl( $map, $rabbit ) {
-		foreach( $map as $k => $element ) {
-			if( is_array( $element ) && !$element['type'] && $rabbit[$k] ) {
-				unset( $rabbit[$k] );
-				self::circl( $element, $rabbit[$k] );
+	static private function circl($map, $rabbit) {
+		foreach($map as $k => $element) {
+			if( is_array($element) && !$element['type'] && $rabbit[$k] ) {
+				unset($rabbit[$k]);
+				self::circl($element, $rabbit[$k]);
 			} else
-				self::check( $element, $rabbit[$k] );
-				unset( $rabbit[$k] );
+				self::check($element, $rabbit[$k]);
+				unset($rabbit[$k]);
 		}
 		
-		if( $rabbit )
+		if($rabbit)
 			throw new Exception('Unexpected array arguments. '.json_encode( $rabbit ));
 	}
 	
@@ -299,35 +404,35 @@ class Map {
 	* @param array map
 	* @param mixed given parameters element
 	*/
-	static private function check( $map, $rabbit ) {
+	static private function check($map, $rabbit) {
 		/**
 		*	required statement check
 		*/
-		if( $map['null'] === false && !$rabbit)
+		if($map['null'] === false && !$rabbit)
 			throw new Exception('Must be not NULL');
 		
 		/**
 		*	If no element exists, exit
 		*/
-		if( !$rabbit )
+		if(!$rabbit)
 			return true;
 			
 		/**
 		*	Check for type
 		*/
-		if( $map['type'] !== gettype($rabbit) && $map['type'] )
+		if($map['type'] !== gettype($rabbit) && $map['type'])
 			throw new Exception('Wrong type '.gettype($rabbit).'! Must be '.$map['type']);
 		
 		/**
 		*	Check for minimal range
 		*/
-		if( $map['min'] > $rabbit && $map['min'] !== null )
+		if($map['min'] > $rabbit && $map['min'] !== null)
 			throw new Exception('Interval overflow by '.$rabbit.'! Must be '.$map['min']);
 			
 		/**
 		*	Check for maximal range
 		*/
-		if( $map['max'] < $rabbit && $map['max'] !== null )
+		if($map['max'] < $rabbit && $map['max'] !== null)
 			throw new Exception('Interval overflow by '.$rabbit.'! Must be '.$map['max']);	
 	}
 }
@@ -351,15 +456,47 @@ class Hash {
 	public $params;
 	
 	/**
+	* Map of user setup parameters
+	* @access private
+	* @var boolean
+	*/
+	private $map = array(
+		'strtolower' => array(
+			'type' => 'boolean'
+		)
+	);
+	
+	/**
 	* Initialization
 	*
 	* @param array parameters
 	* @return object HashObject
 	*/
-	public function __construct( $params ) {
+	public function __construct($setup = null, $hashes = null) {
+		/**
+		*	Default parameters
+		*/
+		$params = array(
+			'strtolower' => true
+		);
+		
+		/**
+		*	Applying income user parameters 
+		*/
+		$params = Map::apply($this->map, $params, $setup);
 		$this->params = $params;
-		$this->seed[] = rand(0, 2048);
-		$this->seed[] = rand(0, 2048);
+		
+		/**
+		*	Creating unique seed
+		*/
+		$seeds = array();
+		if($hashes)
+			foreach($hashes as $hash)
+				$seeds = array_merge( (array) $seeds, (array) $hash->seed );
+		do {
+			$hash = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 5);
+		} while( in_array($hash, $seeds) );
+		$this->seed[] = $hash;
 	}
 	
 	/**
@@ -370,11 +507,11 @@ class Hash {
 	* @return int
 	*/
 	public function crc($string, $size) {
-		$string = strval( $string );
+		$string = strval($string);
 		
-		if( $this->params['strtolower'] === true )
-			$string = mb_strtolower( $string, 'UTF-8' );
+		if($this->params['strtolower'] === true)
+			$string = mb_strtolower($string, 'UTF-8');
 		
-		return abs( crc32( md5( $this->seed[0] . $string . $this->seed[1] ) ) ) % $size;	
+		return abs( crc32( md5($this->seed[0] . $string) ) ) % $size;
 	}
 }

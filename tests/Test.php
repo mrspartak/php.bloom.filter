@@ -107,4 +107,35 @@ class Test extends PHPUnit_Framework_TestCase
 		if( $proc > $bloom->error_chance )
 			$this->fail('Error chance greater. Error_chance '.$bloom->error_chance.'. Counted: '.$proc);
 	}
+	
+	public function testUnsetTestOneToOneValue()
+	{
+		$params = array(
+			'counter' => true
+		);
+		$bloom = new Bloom($params);
+		$bloom->set('A good one');
+		$this->assertEquals( true, $bloom->has('A good one') );
+		$this->assertEquals( true, $bloom->delete('A good one') );
+		$set = explode(',', $bloom->set);
+		$this->assertEquals( 0, array_sum($set) );
+	}
+	
+	public function testUnsetTestManyToManyValue()
+	{
+		$params = array(
+			'counter' => true
+		);
+		$bloom = new Bloom($params);
+		for( $i=0; $i < 10; $i++ ) {
+			$vars[] = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 5);
+			$res[] = true;
+		}
+			
+		$bloom->set($vars);
+		$this->assertEquals( $res, $bloom->has($vars) );
+		$this->assertEquals( $res, $bloom->delete($vars) );
+		$set = explode(',', $bloom->set);
+		$this->assertEquals( 0, array_sum($set) );
+	}
 }
