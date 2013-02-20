@@ -5,7 +5,7 @@
 * This is Bloom's filter php implementation
 * 
 * @author Spartak Kagramanayan <mr.spartak@rambler.ru>
-* @version 0.6
+* @version 0.6.1
 */
 
 /**
@@ -221,7 +221,7 @@ class Bloom
 	* Unset value from Bloom filter
 	*
 	* @param mixed
-	* @return BloomObject
+	* @return mixed (boolean) or (array)
 	*/	
 	public function delete($mixed) {
 		if($this->counter === false)
