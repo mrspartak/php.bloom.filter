@@ -5,6 +5,7 @@ php.bloom.filter
 [Bloom filter](http://en.wikipedia.org/wiki/Bloom_filter) - is the best way to check object exostance and save memory and disk usage.
 
 ### Usage
+Examples and benchmarks are avialable in examples directory.
 
 ##### Basic parameters:
  * **entries_max** (int) Maximal number of entries objects. Default: 100.
@@ -68,4 +69,3 @@ You can also cache the hole object, just using serialize() and unserialize() fun
 * to cooldown HDD usage
 * to speedup checking of object excistance (with counter it still problem)
 * to save memory
-* Use cases:
