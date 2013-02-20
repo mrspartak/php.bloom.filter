@@ -12,7 +12,10 @@ php:
   # aliased to a recent 5.4.x version
   - 5.4
 
+before_script:
+ - cd ./tests/
+
 # omitting "script:" will default to phpunit
 # use the $DB env variable to determine the phpunit.xml to use
-script: phpunit ./tests/Test.php
+script: phpunit ./Test.php
 #--configuration phpunit.xml
