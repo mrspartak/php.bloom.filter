@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ALL | E_PARSE);
+error_reporting(E_ERROR | E_PARSE);
 include '../bloom.class.php';
 
 class Test extends PHPUnit_Framework_TestCase
