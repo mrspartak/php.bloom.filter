@@ -5,7 +5,7 @@
 * This is Bloom's filter php implementation
 * 
 * @author Spartak Kagramanayan <mr.spartak@rambler.ru>
-* @version 0.6.1
+* @version 0.6.2
 */
 
 /**
