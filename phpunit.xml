@@ -1,7 +1,18 @@
-<phpunit>
-  <testsuites>
-    <testsuite name="Test">
-      <directory>./tests/</directory>
-    </testsuite>
-  </testsuites>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit bootstrap="tests/bootstrap.php" colors="true">
+	<testsuites>
+		<testsuite name="Tests">
+				<directory>./tests/</directory>
+		</testsuite>
+	</testsuites>
+
+	<filter>
+		<whitelist>
+			<directory>./</directory>
+			<exclude>
+				<directory>./tests</directory>
+			</exclude>
+		</whitelist>
+	</filter>
 </phpunit>

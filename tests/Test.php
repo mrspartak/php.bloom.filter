@@ -1,6 +1,5 @@
 <?
-
-include 'loader.php';
+//include '../bloom.class.php';
 
 class Test extends PHPUnit_Framework_TestCase
 {
