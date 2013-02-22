@@ -5,14 +5,14 @@
 * This is Bloom's filter php implementation
 * 
 * @author Spartak Kagramanayan <mr.spartak@rambler.ru>
-* @version 0.6.2
+* @version 0.7
 */
 
 /**
 * Main BloomClass
 * Use cases:
 * -to cooldown HDD usage
-* -to speedup checking of object excistance (with counter it still problem)
+* -to speedup checking of object excistance (with counter 40% slower, but still more faster than native)
 * -to save memory
 *
 * When to use:

@@ -2,7 +2,7 @@ php.bloom.filter
 ================
 [![Build Status](https://travis-ci.org/mrspartak/php.bloom.filter.png)](https://travis-ci.org/mrspartak/php.bloom.filter)
 
-[Bloom filter](http://en.wikipedia.org/wiki/Bloom_filter) - is the best way to check object exostance and save memory and disk usage.
+[Bloom filter](http://en.wikipedia.org/wiki/Bloom_filter) - is the best way to check object existance and save memory and disk usage.
 
 ### Usage
 Examples and benchmarks are avialable in examples directory.
@@ -67,5 +67,5 @@ You can also cache the hole object, just using serialize() and unserialize() fun
 
 ##### Use cases:
 * to cooldown HDD usage
-* to speedup checking of object excistance (with counter it still problem)
+* to speedup checking of object excistance (with counter 40% slower, but still more faster than native)
 * to save memory
