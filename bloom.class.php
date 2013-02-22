@@ -70,6 +70,12 @@ class Bloom
 	public $counter;
 	
 	/**
+	* Alphabet for counter
+	* @var string
+	*/
+	public $alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	
+	/**
 	* Map of user setup parameters
 	* @access private
 	* @var boolean
@@ -239,7 +245,7 @@ class Bloom
 		else
 			if($this->has($mixed)) {
 				for($i=0; $i < $this->hash_count; $i++) {
-						$this->counter( $this->hashes[$i]->crc($mixed, $this->set_size), -1 );
+						$this->counter($this->hashes[$i]->crc($mixed, $this->set_size), -1);
 					
 					$this->entries_count--;
 				}
@@ -257,54 +263,21 @@ class Bloom
 	* @param boolean return value or setup set
 	* @return mixed
 	*/	
-	public function counter($position, $add, $get = false) {
+	public function counter($position, $add = 0, $get = false) {
 		/**
 		*	Starter minimal position
 		*/
-		$left = $position*2;
+		$left = $position*2 + 1;
 		
 		/**
-		*	Check if we already on position
-		*/
-		if( @substr_count($this->set, ',', 0, $left) != $num )
-			/**
-			*	Cicle before we will be on needed position
-			*/
-			do {
-				/**
-				*	Go to the next delimeter
-				*/
-				$left = strpos($this->set, ',', $left+1);
-			} while ( @substr_count($this->set, ',', 0, $left) < $num );
-		else
-			/**
-			*	Position of delimeter left from number
-			*/
-			$left = strrpos($this->set, ',', $left - strlen($this->set) + 1);
-		
-		/**
-		*	Return number
+		*	Return value or recalculate with alphabet
 		*/
 		if($get === true)
-			return  intval(substr($this->set, $left+1));
+			return $this->set[$left];
 		else {
-			/**
-			* Get position of right delimeter
-			*/
-			$right = strpos($this->set, ',', $left+1);
-			$right = ($right === false) ? strlen($this->set) : $right;
-			
-			/**
-			*	Get number and manipulate it
-			*/
-			$slave = intval( substr($this->set, $left+1) ) + $add;
-			$slave = ($slave < 0) ? 0 : $slave;
+			$in_a = strpos($this->alphabet, $this->set[$left]);
+			$this->set[$left] = ($this->alphabet[$in_a + $add] != null) ? $this->alphabet[$in_a + $add] : $this->set[$left];
 		}
-		
-		/**
-		*	Setup set with new object
-		*/
-		$this->set = substr($this->set, 0, $left+1) . $slave . substr($this->set, $right);
 	}
 	
 	/**

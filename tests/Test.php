@@ -108,6 +108,21 @@ class Test extends PHPUnit_Framework_TestCase
 			$this->fail('Error chance greater. Error_chance '.$bloom->error_chance.'. Counted: '.$proc);
 	}
 	
+	public function testCounterGetTest()
+	{
+		$params = array(
+			'counter' => true
+		);
+		$bloom = new Bloom($params);
+		$bloom->set = '';
+		for($i=0; $i<strlen($bloom->alphabet); $i++)
+			$bloom->set .= ','.$bloom->alphabet[$i];
+		$num = rand(0, strlen($bloom->alphabet));
+		$this->assertEquals($bloom->alphabet[$num], $bloom->counter($num, 0, true));
+		$bloom->counter($num, 1);
+		$this->assertEquals($bloom->alphabet[$num+1], $bloom->counter($num, 0, true));
+	}
+	
 	public function testUnsetTestOneToOneValue()
 	{
 		$params = array(
@@ -115,8 +130,10 @@ class Test extends PHPUnit_Framework_TestCase
 		);
 		$bloom = new Bloom($params);
 		$bloom->set('A good one');
+		
 		$this->assertEquals( true, $bloom->has('A good one') );
 		$this->assertEquals( true, $bloom->delete('A good one') );
+		
 		$set = explode(',', $bloom->set);
 		$this->assertEquals( 0, array_sum($set) );
 	}
