@@ -160,8 +160,7 @@ class Bloom
 		/**
 		*	Initiation set
 		*/
-		$piece = ($this->counter) ? ',0' : '0';
-		$this->set = str_repeat($piece, $this->set_size);
+		$this->set = str_repeat('0', $this->set_size);
 		
 		return $this;
 	}
@@ -185,9 +184,8 @@ class Bloom
 	* @return object unserialized object
 	*/	
 	public function __wakeup() {
-		$piece = ($this->counter) ? ',0' : '0';
 		if($this->entries_count == 0)
-			$this->set = str_repeat($piece, $this->set_size);
+			$this->set = str_repeat('0', $this->set_size);
 	}
 	
 	/**
@@ -263,20 +261,15 @@ class Bloom
 	* @param boolean return value or setup set
 	* @return mixed
 	*/	
-	public function counter($position, $add = 0, $get = false) {
-		/**
-		*	Starter minimal position
-		*/
-		$left = $position*2 + 1;
-		
+	public function counter($position, $add = 0, $get = false) {		
 		/**
 		*	Return value or recalculate with alphabet
 		*/
 		if($get === true)
-			return $this->set[$left];
+			return $this->set[$position];
 		else {
-			$in_a = strpos($this->alphabet, $this->set[$left]);
-			$this->set[$left] = ($this->alphabet[$in_a + $add] != null) ? $this->alphabet[$in_a + $add] : $this->set[$left];
+			$in_a = strpos($this->alphabet, $this->set[$position]);
+			$this->set[$position] = ($this->alphabet[$in_a + $add] != null) ? $this->alphabet[$in_a + $add] : $this->set[$position];
 		}
 	}
 	
@@ -303,6 +296,7 @@ class Bloom
 					$value = $this->set[ $this->hashes[$i]->crc($mixed, $this->set_size) ];
 				else
 					$value = $this->counter($this->hashes[$i]->crc($mixed, $this->set_size), 0, true);
+					
 				/**
 				*	$boolean parameter allows to choose what to return
 				* boolean or the procent of entries pass

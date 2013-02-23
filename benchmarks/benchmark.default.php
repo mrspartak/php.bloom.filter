@@ -69,7 +69,8 @@ $result['array']['total']['time'] = $result['array']['insert']['time'] + $result
 $result['bloom']['total']['mem'] = $result['bloom']['insert']['mem'] + $result['bloom']['has']['mem'];
 $result['array']['total']['mem'] = $result['array']['insert']['mem'] + $result['array']['has']['mem'];
 
-echo NL, '<strong>###########</strong>', NL;
+echo NL, 'Bloom Filter vs in_array', NL;
+echo '<strong>###########</strong>', NL;
 echo 'Current number of objects: '.$number.', number of check objects: '. count($check), NL;
 echo 'Choose number of objects: ', lnk(100), lnk(1000), lnk(10000), NL;
 echo '<strong>## Setting ##</strong>', NL;

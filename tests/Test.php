@@ -46,15 +46,13 @@ class Test extends PHPUnit_Framework_TestCase
 	public function testHashesDifference()
 	{
 		$bloom = new Bloom();
-		$string = uniqid();
 		foreach( $bloom->hashes as $hash ) {
-			$result[] = $hash->crc($string, $bloom->set_size);
 			$seeds[] = $hash->seed;
 		}
-		sort( $result );
-		foreach( $result as $k => $rslt )
-			if( $result[$k+1] && $result[$k+1] == $rslt ) {
-				$this->fail('Similar results by '.$bloom->hash_count.' hashes and seeds: '.json_encode($seeds).'. Result: '.json_encode($result));
+		sort( $seeds );
+		foreach( $seeds as $k => $rslt )
+			if( $seeds[$k+1] && $seeds[$k+1] == $rslt ) {
+				$this->fail('Similar results by '.$bloom->hash_count.' hashes and seeds: '.json_encode($seeds).'.');
 			}
 	}
 	
@@ -116,7 +114,7 @@ class Test extends PHPUnit_Framework_TestCase
 		$bloom = new Bloom($params);
 		$bloom->set = '';
 		for($i=0; $i<strlen($bloom->alphabet); $i++)
-			$bloom->set .= ','.$bloom->alphabet[$i];
+			$bloom->set .= $bloom->alphabet[$i];
 		$num = rand(0, strlen($bloom->alphabet));
 		$this->assertEquals($bloom->alphabet[$num], $bloom->counter($num, 0, true));
 		$bloom->counter($num, 1);
