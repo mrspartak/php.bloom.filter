@@ -4,7 +4,7 @@
 * 
 * This is Bloom's filter php implementation
 * 
-* @author Spartak Kagramanayan <mr.spartak@rambler.ru>
+* @author Spartak Kagramanayan <mr.spartak[at]rambler.ru>
 * @version 0.7
 */
 
@@ -458,7 +458,7 @@ class Hash {
 			foreach($hashes as $hash)
 				$seeds = array_merge( (array) $seeds, (array) $hash->seed );
 		do {
-			$hash = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 5);
+			$hash = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 6);
 		} while( in_array($hash, $seeds) );
 		$this->seed[] = $hash;
 	}
