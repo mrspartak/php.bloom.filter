@@ -7,8 +7,8 @@
     "license": "BSD-3-Clause",
     "authors": [
         {
-            "name": "Assorium",
-            "email": ""
+            "name": "Spartak Home",
+            "email": "spartak@digicast.ru"
         }
     ],
     "require": {
@@ -21,5 +21,5 @@
         "classmap": [
             "bloom.class.php"
         ]
-    },
+    }
 }
