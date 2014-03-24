@@ -291,6 +291,7 @@ class Bloom
 				
 			return $result;	
 		}	else {
+			$c = 0;
 			for($i=0; $i < $this->hash_count; $i++) {
 				if($this->counter === false)
 					$value = $this->set[ $this->hashes[$i]->crc($mixed, $this->set_size) ];
@@ -350,12 +351,13 @@ class Map {
 	*/
 	static private function circl($map, $rabbit) {
 		foreach($map as $k => $element) {
-			if( is_array($element) && !$element['type'] && $rabbit[$k] ) {
+			if (is_array($element) && (!array_key_exists('type', $element) || !$element['type']) && array_key_exists($k, $rabbit)) {
 				unset($rabbit[$k]);
 				self::circl($element, $rabbit[$k]);
-			} else
+			} else if (array_key_exists($k, $rabbit)) {
 				self::check($element, $rabbit[$k]);
 				unset($rabbit[$k]);
+			}
 		}
 		
 		if($rabbit)
@@ -372,7 +374,7 @@ class Map {
 		/**
 		*	required statement check
 		*/
-		if($map['null'] === false && !$rabbit)
+		if (array_key_exists('null', $map) && $map['null'] === false && !$rabbit)
 			throw new Exception('Must be not NULL');
 		
 		/**
@@ -384,19 +386,19 @@ class Map {
 		/**
 		*	Check for type
 		*/
-		if($map['type'] !== gettype($rabbit) && $map['type'])
+		if (array_key_exists('type', $map) && $map['type'] !== gettype($rabbit) && $map['type'])
 			throw new Exception('Wrong type '.gettype($rabbit).'! Must be '.$map['type']);
 		
 		/**
 		*	Check for minimal range
 		*/
-		if($map['min'] > $rabbit && $map['min'] !== null)
+		if (array_key_exists('min', $map) && $map['min'] > $rabbit && $map['min'] !== null)
 			throw new Exception('Interval overflow by '.$rabbit.'! Must be '.$map['min']);
 			
 		/**
 		*	Check for maximal range
 		*/
-		if($map['max'] < $rabbit && $map['max'] !== null)
+		if (array_key_exists('min', $map) && $map['min'] > $rabbit && $map['min'] !== null)
 			throw new Exception('Interval overflow by '.$rabbit.'! Must be '.$map['max']);	
 	}
 }
