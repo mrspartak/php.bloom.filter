@@ -2,7 +2,7 @@
 function loader($class)
 {
 	if( $class == 'Bloom' )
-		$file = '../bloom.class.php';
+		$file = dirname(__FILE__) . '/../bloom.class.php';
 	else
     $file = $class . '.php';
 	if (file_exists($file)) {
