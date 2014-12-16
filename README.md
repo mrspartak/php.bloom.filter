@@ -5,7 +5,7 @@ php.bloom.filter
 [Bloom filter](http://en.wikipedia.org/wiki/Bloom_filter) - is the best way to check object existance and save memory and disk usage.
 
 ### Usage
-Examples and benchmarks are avialable in examples directory.
+Examples and benchmarks are available in examples directory.
 
 ##### Basic parameters:
  * **entries_max** (int) Maximal number of entries objects. Default: 100.
