@@ -59,7 +59,7 @@ echo $bloom->has('Some string'); //false
 
 ##### Caching
 
-You can also cache the hole object, just using serialize() and unserialize() functions
+You can also cache the whole object, just using serialize() and unserialize() functions
 
 ##### When to use
 * Get/Set operations are more than 0.001
@@ -67,5 +67,5 @@ You can also cache the hole object, just using serialize() and unserialize() fun
 
 ##### Use cases:
 * to cooldown HDD usage
-* to speedup checking of object excistance (with counter 40% slower, but still more faster than native)
+* to speedup checking of object existence (with counter 40% slower, but still more faster than native)
 * to save memory
