@@ -69,3 +69,5 @@ You can also cache the whole object, just using serialize() and unserialize() fu
 * to cooldown HDD usage
 * to speedup checking of object existence (with counter 40% slower, but still more faster than native)
 * to save memory
+
+![alt text](https://p1.assorium.ru/?cid=9bb2778b5bd875e57c2b8bd46c3b2f5c "Logo Title Text 1")
